@@ -47,7 +47,10 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     search_str = ""
     for arg in context.args:
-        search_str+= arg + " "
+        if arg.startswith('-r'):
+            rent = int(arg[2:])
+        else:
+            search_str+= arg + " "
 
     querystring["locationPrefix"] = search_str
     response = requests.get(auto_comp_url, headers=headers, params=querystring)
@@ -58,7 +61,8 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         poll_options.append(InputPollOption(text=x['geoLabel']))
         geo_data.append({
             'geoIdentifier': x['geoIdentifier'],
-            'geoLabel': x['geoLabel']
+            'geoLabel': x['geoLabel'],
+            'price_limit': rent
             })
     
     message = await context.bot.send_poll(chat_id=update.effective_chat.id,
@@ -79,7 +83,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def help(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(chat_id=update.effective_chat.id, text="Following are available commands and their usage\n\n" \
-                                                                        "use /start [Location] - to start a new subscription\n" \
+                                                                        "use /start [Location] -r[Rent Limit]- to start a new subscription\n" \
                                                                         "use /help - to display this message\n" \
                                                                         "\n*No more than 10 concurrent subscriptions are permitted*" )
     
@@ -103,7 +107,7 @@ async def receive_poll_answer(update: Update, context: ContextTypes.DEFAULT_TYPE
         sub['chat_id'] = answered_poll['chat_id']
         sub['geo_id'] = geo_data[selection]['geoIdentifier']
         sub['geo_label'] = geo_data[selection]['geoLabel']
-        sub['price_limit'] = 2000
+        sub['price_limit'] = geo_data[selection]['price_limit']
         subscriptions.append(sub)
 
     if(len(add_subscriptions(subscriptions)[1])==len(subscriptions)):
@@ -114,7 +118,7 @@ async def receive_poll_answer(update: Update, context: ContextTypes.DEFAULT_TYPE
 
 
 if __name__ == '__main__':
-    application = ApplicationBuilder().token(api_key).build()
+    application = ApplicationBuilder().token(bot_token).build()
 
     application.add_handler(CommandHandler('start', start))
     application.add_handler(CommandHandler('help', help))
