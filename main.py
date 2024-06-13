@@ -38,13 +38,13 @@ def get_for_testing():
 async def get_subs_and_send_notification(change_map):
     subs = get_subscriptions()
     for sub in subs:
-        listings = get_listing_to_send(sub['geo_id'],sub['chat_id'],[])
+        listings = get_listing_to_send(sub['geo_id'],sub['chat_id'],sub['price_limit'],change_map[sub['geo_id']])
         for listing in listings:
-            await send_message(chat_id=sub['chat_id'],listing=listing,change_map={listing['geo_id']:[]})
+            await send_message(chat_id=sub['chat_id'],listing=listing,change_map=change_map)
 
 async def send_message(chat_id, listing, change_map):
 
-    caption = "Price Update\n" if listing['listing_id'] in change_map[listing['geo_id']] else "New Listing\n"
+    caption = "Price Update!!\n" if listing['listing_id'] in change_map[listing['geo_id']] else "New Listing\n"
     caption += listing['type'] + "\n" + listing['address'] + "\n" + listing['rent_label'] + "\n" + listing['url']
 
     media_group = []
