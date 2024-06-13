@@ -17,11 +17,12 @@ def get_subscriptions():
     data, count = supabase.table('subscriptions').select('*').execute()
     return data[1]
 
-def get_listing_to_send(geo_id, chat_id, ignore_listings):
+def get_listing_to_send(geo_id, chat_id, rent_limit, ignore_listings):
     return supabase.rpc(fn='get_listings_to_send',
                         params={
                             'curr_geo_id' : geo_id,
                             'curr_chat' : chat_id,
+                            'rent_limit' : rent_limit,
                             'ignore_listings' : ignore_listings
                         }).select('*').execute().data
 
