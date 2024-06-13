@@ -8,8 +8,10 @@ from telegram import (
 from telegram.ext import (
     ApplicationBuilder, 
     ContextTypes, 
-    CommandHandler, 
-    PollAnswerHandler
+    CommandHandler,
+    MessageHandler, 
+    PollAnswerHandler,
+    filters
 )
 from dotenv import load_dotenv
 
@@ -39,8 +41,9 @@ headers = {
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         
     if(len(context.args)==0):
-        await context.bot.send_message(chat_id=update.effective_chat.id, text="Incorrect Usage\n"\
-                                                                            "use /help for more info")
+        await context.bot.send_message(chat_id=update.effective_chat.id, text="Incorrect Usage")
+        #Bogus Function call to throw error
+        await context.bot.raise_hell()  
         return
     
     await context.bot.send_message(chat_id=update.effective_chat.id, text="Processing your request, please wait...")
@@ -86,7 +89,7 @@ async def help(update: Update, context: ContextTypes.DEFAULT_TYPE):
                                                                         "use /start [Location] -r[Rent Limit]- to start a new subscription\n" \
                                                                         "use /help - to display this message\n" \
                                                                         "\n*No more than 10 concurrent subscriptions are permitted*" )
-    
+
 async def receive_poll_answer(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     answer = update.poll_answer
@@ -116,11 +119,12 @@ async def receive_poll_answer(update: Update, context: ContextTypes.DEFAULT_TYPE
     else:
         await context.bot.send_message(chat_id=answered_poll["chat_id"], text="DB Error")
 
-
 if __name__ == '__main__':
     application = ApplicationBuilder().token(bot_token).build()
 
     application.add_handler(CommandHandler('start', start))
     application.add_handler(CommandHandler('help', help))
+    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, help))
     application.add_handler(PollAnswerHandler(receive_poll_answer))
+    application.add_error_handler(help)
     application.run_polling(allowed_updates=Update.ALL_TYPES)
