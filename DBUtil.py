@@ -23,10 +23,10 @@ def get_listing_to_send(geo_id, chat_id, ignore_listings):
                             'curr_geo_id' : geo_id,
                             'curr_chat' : chat_id,
                             'ignore_listings' : ignore_listings
-                        }).select('*').limit(5).execute().data
+                        }).select('*').execute().data
 
 def get_listing_param():
-    return supabase.rpc('get_listing_param').select('*').limit(1).execute()
+    return supabase.rpc('get_listing_param').select('*').execute()
 
 def add_listings(listings):
     data, count = supabase.table('listings').upsert(listings).execute()
