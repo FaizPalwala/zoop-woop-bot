@@ -48,7 +48,9 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     await context.bot.send_message(chat_id=update.effective_chat.id, text="Processing your request, please wait...")
 
+    #default values
     search_str = ""
+    rent = 2000
     for arg in context.args:
         if arg.startswith('-r'):
             rent = int(arg[2:])
@@ -57,10 +59,25 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     querystring["locationPrefix"] = search_str
     response = requests.get(auto_comp_url, headers=headers, params=querystring)
+    geoSuggestion = response.json()['data']['geoSuggestion']
 
+    if(len(geoSuggestion)<2):
+        if(len(geoSuggestion)==0):
+            await context.bot.send_message(chat_id=update.effective_chat.id, text="No results foundc, please try again.")
+        else:
+            subscriptions = []
+            sub = {}
+            sub['chat_id'] = update.effective_chat.id
+            sub['geo_id'] = geoSuggestion[0]['geoIdentifier']
+            sub['geo_label'] = geoSuggestion[0]['geoLabel']
+            sub['price_limit'] = rent
+            subscriptions.append(sub)
+            add_subscriptions(subscriptions)
+        return
+        
     poll_options = []
     geo_data = []
-    for x in response.json()['data']['geoSuggestion']:
+    for x in geoSuggestion:
         poll_options.append(InputPollOption(text=x['geoLabel']))
         geo_data.append({
             'geoIdentifier': x['geoIdentifier'],
