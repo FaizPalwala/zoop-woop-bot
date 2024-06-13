@@ -2,7 +2,6 @@
 import asyncio
 import requests
 import os
-import json
 from dotenv import load_dotenv
 from telegram import Bot, InputMediaPhoto
 import telegram
