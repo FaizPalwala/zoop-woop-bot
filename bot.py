@@ -15,7 +15,7 @@ from telegram.ext import (
 )
 from dotenv import load_dotenv
 
-from DBUtil import add_subscriptions
+from DBUtil import add_subscriptions, stop_subscriptions
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -88,7 +88,12 @@ async def help(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(chat_id=update.effective_chat.id, text="Following are available commands and their usage\n\n" \
                                                                         "use /start [Location] -r[Rent Limit]- to start a new subscription\n" \
                                                                         "use /help - to display this message\n" \
+                                                                        "use /stop - to stop all current subscriptions\n" \
                                                                         "\n*No more than 10 concurrent subscriptions are permitted*" )
+
+async def stop(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    stop_subscriptions(update.effective_chat.id)
+    await context.bot.send_message(chat_id=update.effective_chat.id, text="Subscriptions stopped")
 
 async def receive_poll_answer(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
@@ -124,6 +129,7 @@ if __name__ == '__main__':
 
     application.add_handler(CommandHandler('start', start))
     application.add_handler(CommandHandler('help', help))
+    application.add_handler(CommandHandler('stop', stop))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, help))
     application.add_handler(PollAnswerHandler(receive_poll_answer))
     application.add_error_handler(help)

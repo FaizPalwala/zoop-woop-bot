@@ -13,6 +13,9 @@ def add_subscriptions(subs):
     data, count = supabase.table('subscriptions').upsert(subs).execute()
     return data
 
+def stop_subscriptions(chat_id):
+    data, count = supabase.table('subscriptions').delete().eq('chat_id', chat_id).execute()
+
 def get_subscriptions():
     data, count = supabase.table('subscriptions').select('*').execute()
     return data[1]
