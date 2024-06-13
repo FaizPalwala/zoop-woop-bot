@@ -6,7 +6,7 @@ import json
 from dotenv import load_dotenv
 from telegram import Bot, InputMediaPhoto
 import telegram
-from DBUtil import add_listings, create_transaction, get_listing_by_geo_id, get_listing_param, get_listing_to_send, get_subscriptions
+from DBUtil import add_listings, create_transaction, delete_stale_listings, get_listing_by_geo_id, get_listing_param, get_listing_to_send, get_subscriptions
 import pickle 
 
 
@@ -109,9 +109,8 @@ async def main():
     
     listing_param = get_listing_param()
     change_map = process_listings(listing_param.data)
-    change_map = {}
+    delete_stale_listings()
     await get_subs_and_send_notification(change_map)
-    print(change_map)
   
   
 if __name__=="__main__": 

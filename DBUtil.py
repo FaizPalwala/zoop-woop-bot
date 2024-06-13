@@ -40,5 +40,8 @@ def create_transaction(transaction):
     data, count = supabase.table('transactions').upsert(transaction).execute()
     return data
 
+def delete_stale_listings():
+    return supabase.rpc('delete_stale_listings').execute()
+
 
 
