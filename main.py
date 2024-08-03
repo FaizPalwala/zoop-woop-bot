@@ -7,6 +7,7 @@ from telegram import Bot, InputMediaPhoto
 import telegram
 from DBUtil import add_listings, create_transaction, delete_stale_listings, get_listing_by_geo_id, get_listing_param, get_listing_to_send, get_subscriptions
 import pickle 
+import asyncio_pause as pause
 
 
 # Load .env file
@@ -56,8 +57,22 @@ async def send_message(chat_id, listing, change_map):
     transaction['listing_id'] = listing['listing_id']
     transaction['price'] = listing['rent']
     
-    await bot.send_media_group(chat_id=chat_id, media= media_group)
-    create_transaction(transaction)
+    if not media_group:
+        await bot.send_message(chat_id=chat_id, text="No Images :( \n"+caption)
+    else:
+        for attempt in range(3):
+            try:
+                await bot.send_media_group(chat_id=chat_id, media= media_group, read_timeout=30)
+                create_transaction(transaction)
+            except telegram.error.RetryAfter as e:
+                await pause.seconds(e.retry_after)
+                continue
+            except:
+                continue
+            else:
+                break
+
+    
 
 
 def get_new_listings_by_param(param):
@@ -68,7 +83,10 @@ def get_new_listings_by_param(param):
     querystring['priceMax'] = str(param['price'])
 
     #process response
-    response = requests.get(listing_api_url, headers=headers, params=querystring)
+    response = requests.Response()
+    while(response.status_code != 200):
+        response = requests.get(listing_api_url, headers=headers, params=querystring)
+
     resListingData = response.json()['data']['listings']
 
     listings = []
